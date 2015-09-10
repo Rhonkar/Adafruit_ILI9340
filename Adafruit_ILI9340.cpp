@@ -32,9 +32,13 @@
   #define CLEAR_BIT(port, bitMask) (port)->PIO_CODR |= (bitMask)
   #define USE_SPI_LIBRARY
 #endif
-#ifdef __AVR__
+#if defined(__AVR__)
   #define SET_BIT(port, bitMask) *(port) |= (bitMask)
   #define CLEAR_BIT(port, bitMask) *(port) &= ~(bitMask)
+#elif defined(ESP8266)
+  #define USE_SPI_LIBRARY
+  #define SET_BIT(port, bitMask) digitalWrite(*(port), HIGH);
+  #define CLEAR_BIT(port, bitMask) digitalWrite(*(port), LOW);
 #endif
 #if defined(__arm__) && defined(CORE_TEENSY)
   #define USE_SPI_LIBRARY
@@ -70,7 +74,7 @@ void Adafruit_ILI9340::spiwrite(uint8_t c) {
   //Serial.print("0x"); Serial.print(c, HEX); Serial.print(", ");
 
   if (hwSPI) {
-#ifdef __AVR__
+#if defined(__AVR__)
     SPDR = c;
     while(!(SPSR & _BV(SPIF)));
 #endif
@@ -163,7 +167,7 @@ void Adafruit_ILI9340::begin(void) {
   digitalWrite(_rst, LOW);
   pinMode(_dc, OUTPUT);
   pinMode(_cs, OUTPUT);
-#ifdef __AVR__
+#if defined(__AVR__)
   csport    = portOutputRegister(digitalPinToPort(_cs));
   dcport    = portOutputRegister(digitalPinToPort(_dc));
 #endif
@@ -171,7 +175,7 @@ void Adafruit_ILI9340::begin(void) {
   csport    = digitalPinToPort(_cs);
   dcport    = digitalPinToPort(_dc);
 #endif
-#if defined(__arm__) && defined(CORE_TEENSY)
+#if defined(__arm__) && defined(CORE_TEENSY) || defined(ESP8266)
   mosiport = &_mosi;
   clkport = &_sclk;
   rsport = &_rst;
@@ -183,7 +187,7 @@ void Adafruit_ILI9340::begin(void) {
 
   if(hwSPI) { // Using hardware SPI
     SPI.begin();
-#ifdef __AVR__
+#if defined(__AVR__) || defined(ESP8266)
     SPI.setClockDivider(SPI_CLOCK_DIV2); // 8 MHz (full! speed!)
 #endif
 #if defined(__SAM3X8E__)
@@ -195,7 +199,7 @@ void Adafruit_ILI9340::begin(void) {
     pinMode(_sclk, OUTPUT);
     pinMode(_mosi, OUTPUT);
     pinMode(_miso, INPUT);
-#ifdef __AVR__
+#if defined(__AVR__)
     clkport     = portOutputRegister(digitalPinToPort(_sclk));
     mosiport    = portOutputRegister(digitalPinToPort(_mosi));
 #endif
@@ -521,7 +525,7 @@ uint8_t Adafruit_ILI9340::spiread(void) {
   uint8_t r = 0;
 
   if (hwSPI) {
-#ifdef __AVR__
+#if defined(__AVR__)
     SPDR = 0x00;
     while(!(SPSR & _BV(SPIF)));
     r = SPDR;

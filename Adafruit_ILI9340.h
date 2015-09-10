@@ -161,10 +161,14 @@ class Adafruit_ILI9340 : public Adafruit_GFX {
 
 
   boolean  hwSPI;
-#ifdef __AVR__  
+#if defined(__AVR__)
   volatile uint8_t *mosiport, *clkport, *dcport, *rsport, *csport;
   uint8_t  _cs, _dc, _rst, _mosi, _miso, _sclk,
            mosipinmask, clkpinmask, cspinmask, dcpinmask;
+#elif defined(ESP8266)
+    volatile uint8_t *mosiport, *clkport, *dcport, *rsport, *csport;
+    uint8_t  _cs, _dc, _rst, _mosi, _miso, _sclk,
+    mosipinmask, clkpinmask, cspinmask, dcpinmask;
 #endif //  #ifdef __AVR__
 #if defined(__SAM3X8E__)
   Pio *mosiport, *clkport, *dcport, *rsport, *csport;
